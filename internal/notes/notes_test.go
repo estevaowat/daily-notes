@@ -14,7 +14,7 @@ func TestCreateNewNote(t *testing.T) {
 	defer SetVaultPath(DefaultVaultPath)
 
 	now := time.Date(2026, 3, 15, 0, 0, 0, 0, time.UTC)
-	err := createDailyNoteAt(now)
+	err := createDailyNoteAt(now, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -47,7 +47,7 @@ func TestFileAlreadyExists(t *testing.T) {
 	os.MkdirAll(daysPath, 0755)
 	os.WriteFile(filepath.Join(daysPath, filename), []byte("# 2026-03-10\n"), 0644)
 
-	err := createDailyNoteAt(now)
+	err := createDailyNoteAt(now, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -59,7 +59,7 @@ func TestCreatesDaysFolder(t *testing.T) {
 	defer SetVaultPath(DefaultVaultPath)
 
 	now := time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC)
-	err := createDailyNoteAt(now)
+	err := createDailyNoteAt(now, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

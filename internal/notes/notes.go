@@ -21,10 +21,34 @@ func SetVaultPath(path string) {
 
 func CreateDailyNote() error {
 	now := time.Now()
-	return createDailyNoteAt(now)
+
+	var content string
+	notePath, _, err := findPreviousNoteAt(now)
+	if err != nil {
+		return err
+	}
+
+	if notePath != "" {
+		prevContent, err := os.ReadFile(notePath)
+		if err != nil {
+			return fmt.Errorf("failed to read previous note: %w", err)
+		}
+
+		tasks := ExtractIncompleteTasks(string(prevContent))
+		if len(tasks) > 0 {
+			var output bytes.Buffer
+			output.WriteString("## Previous's Tasks\n")
+			for _, task := range tasks {
+				output.WriteString(task + "\n")
+			}
+			content = output.String()
+		}
+	}
+
+	return createDailyNoteAt(now, content)
 }
 
-func createDailyNoteAt(t time.Time) error {
+func createDailyNoteAt(t time.Time, content string) error {
 	dateStr := t.Format("2006-01-02")
 	filename := fmt.Sprintf("%s.md", dateStr)
 	daysPath := filepath.Join(vaultPath, DaysFolder)
@@ -45,7 +69,7 @@ func createDailyNoteAt(t time.Time) error {
 		return fmt.Errorf("failed to check file existence: %w", err)
 	}
 
-	if err := os.WriteFile(notePath, []byte(""), 0644); err != nil {
+	if err := os.WriteFile(notePath, []byte(content), 0644); err != nil {
 		return fmt.Errorf("failed to create note: %w", err)
 	}
 
@@ -86,39 +110,4 @@ func ExtractIncompleteTasks(content string) []string {
 	}
 
 	return tasks
-}
-
-func CopyIncompleteTasksToClipboard() error {
-	notePath, noteDate, err := FindPreviousNote()
-	if err != nil {
-		return err
-	}
-
-	if notePath == "" {
-		return nil
-	}
-
-	content, err := os.ReadFile(notePath)
-	if err != nil {
-		return fmt.Errorf("failed to read previous note: %w", err)
-	}
-
-	tasks := ExtractIncompleteTasks(string(content))
-	if len(tasks) == 0 {
-		return nil
-	}
-
-	var output bytes.Buffer
-	output.WriteString("## Yesterday's Tasks\n")
-	for _, task := range tasks {
-		output.WriteString(task + "\n")
-	}
-
-	clipboardPath := notePath + ".clipboard"
-	if err := os.WriteFile(clipboardPath, output.Bytes(), 0644); err != nil {
-		return fmt.Errorf("failed to write clipboard file: %w", err)
-	}
-
-	fmt.Printf("Copied %d incomplete tasks from %s to clipboard file\n", len(tasks), noteDate.Format("2006-01-02"))
-	return nil
 }
