@@ -6,12 +6,12 @@ This is a small Go command‑line program (`dailynotes`) that creates a daily no
 
 ## Architecture
 
-- **Entry point**: `cmd/dailynotes/main.go` builds a single binary.
+- **Entry point**: `/main.go` builds a single binary.
 - **Core logic**: resides in `internal/notes/notes.go`; it determines the vault path, ensures a `days` subdirectory exists, and creates an empty markdown file named `YYYY-MM-DD.md` for the current date.
 - **Configuration**: a hard‑coded `DefaultVaultPath` constant is used by default; tests override it with `SetVaultPath`.
 - **Dependencies**: only the Go standard library; `go.mod` defines the module `dailynotes`.
 - There are no external services or libraries (aside from optional lint/test tooling).
-
+- **Binary**: The executable stays in the `/bin` folder
 ## Project Conventions
 
 - Keep logic in `internal/` so it’s not accidentally imported by other modules.
@@ -97,7 +97,7 @@ go get <package>
       "os"
 
       "dailynotes/internal/notes"
-  
+
       "github.com/pkg/errors"
   )
   ```
